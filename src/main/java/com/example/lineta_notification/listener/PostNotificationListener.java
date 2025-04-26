@@ -33,7 +33,7 @@ public class PostNotificationListener {
 
         // Giả lập lấy tất cả user trong hệ thống
         List<String> allUsernames = List.of("leosagii", "thien001");
-
+        //build noti
         for (String username : allUsernames) {
             PostNotification noti = PostNotification.builder()
                     .receiverUsername(username)
