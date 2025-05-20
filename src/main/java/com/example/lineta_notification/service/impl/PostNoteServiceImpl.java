@@ -36,6 +36,7 @@ public class PostNoteServiceImpl implements PostNoteService {
     public WriteResult savePostNote (PostNotification postNote) throws ExecutionException, InterruptedException {
         Map<String, Object> postNoteFB = new HashMap<>();
         postNoteFB.put("content", postNote.getContent());
+        postNoteFB.put("senderUsername", postNote.getSenderUsername());
         postNoteFB.put("postID", postNote.getPostId());
         postNoteFB.put("receiverUsername", postNote.getReceiverUsername());
         postNoteFB.put("isRead", postNote.isRead());
@@ -45,14 +46,6 @@ public class PostNoteServiceImpl implements PostNoteService {
         ApiFuture<WriteResult> writeResult = docRef.set(postNoteFB);
         return writeResult.get();
 
-    }
-
-    @Override
-    public void notifyUserRealtime(PostNotification noti) {
-        messagingTemplate.convertAndSend(
-                "/topic/notifications/" + noti.getReceiverUsername(),
-                noti
-        );
     }
 
     @Override
