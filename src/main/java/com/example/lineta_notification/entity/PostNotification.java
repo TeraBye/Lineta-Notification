@@ -17,5 +17,6 @@ public class PostNotification {
     private String content;
     private String postId;
     private Timestamp timestamp;
+    private String senderUsername;
     private boolean isRead = false;
 }

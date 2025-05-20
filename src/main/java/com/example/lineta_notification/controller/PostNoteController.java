@@ -1,5 +1,6 @@
 package com.example.lineta_notification.controller;
 
+import com.example.lineta_notification.dto.response.ApiResponse;
 import com.example.lineta_notification.entity.PostNotification;
 import com.example.lineta_notification.service.PostNoteService;
 import com.google.cloud.firestore.WriteResult;
@@ -25,16 +26,21 @@ public class PostNoteController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<String> createPost(@RequestBody PostNotification postNote) {
+    public ResponseEntity<ApiResponse<Void>> createPost(@RequestBody PostNotification postNote) {
         try {
             WriteResult result = postNoteService.savePostNote(postNote);
-            return ResponseEntity.ok("PostNote created at: " + result.getUpdateTime());
-        } catch (ExecutionException | InterruptedException e){
-            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+            return ResponseEntity.ok(ApiResponse.<Void>builder()
+                    .code(1000)
+                    .message("PostNotification created at: " + result.getUpdateTime())
+                    .build());
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).body(ApiResponse.<Void>builder()
+                    .code(1001)
+                    .message("Error: " + e.getMessage())
+                    .build());
         }
-
-
     }
+
 
 
 }
