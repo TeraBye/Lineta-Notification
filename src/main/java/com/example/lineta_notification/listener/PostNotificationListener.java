@@ -45,6 +45,9 @@ public class PostNotificationListener {
         } else if (Objects.equals(type, "comment") || Objects.equals(type, "like")) {
             String cmtReceiver = data.get("cmtReceiver");
             allUsernames = cmtReceiver.equals(senderUsername) ? List.of() : List.of(cmtReceiver);
+        } else if (Objects.equals(type, "follow")) {
+            String followReceiver = data.get("followReceiver");
+            allUsernames = followReceiver.equals(senderUsername) ? List.of() : List.of(followReceiver);
         }
 
         messagingTemplate.convertAndSend("/topic/notifications", senderUsername);
