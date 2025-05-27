@@ -1,5 +1,6 @@
 package com.example.lineta_notification.listener;
 
+import com.example.lineta_notification.client.UserClient;
 import com.example.lineta_notification.entity.PostNotification;
 import com.example.lineta_notification.service.PostNoteService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,10 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Component
@@ -27,6 +25,11 @@ public class PostNotificationListener {
     private PostNoteService notificationService;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    private final UserClient userClient;
+
+    public PostNotificationListener(UserClient userClient) {
+        this.userClient = userClient;
+    }
 
     @KafkaListener(topics = "post-notifications", groupId = "notification-group")
     public void handlePostNotification(String message) throws JsonProcessingException, ExecutionException, InterruptedException {
@@ -41,8 +44,10 @@ public class PostNotificationListener {
 
         if (Objects.equals(type, "post")) {
             // thay bằng list friend
-            allUsernames = List.of("leosagii", "thien001");
-        } else if (Objects.equals(type, "comment") || Objects.equals(type, "like")) {
+//            allUsernames = List.of("leosagii", "thien001");
+            allUsernames = userClient.getFollowerUsernames(data.get("sender-uid"));
+            System.out.println(allUsernames);
+        } else if (Objects.equals(type, "comment") || Objects.equals(type, "like") || Objects.equals(type, "reply") ) {
             String cmtReceiver = data.get("cmtReceiver");
             allUsernames = cmtReceiver.equals(senderUsername) ? List.of() : List.of(cmtReceiver);
         } else if (Objects.equals(type, "follow")) {
@@ -50,7 +55,10 @@ public class PostNotificationListener {
             allUsernames = followReceiver.equals(senderUsername) ? List.of() : List.of(followReceiver);
         }
 
-        messagingTemplate.convertAndSend("/topic/notifications", senderUsername);
+        for (String username : allUsernames) {
+            messagingTemplate.convertAndSend("/topic/notifications/" + username, senderUsername);
+        }
+
 
         // Chỉ tạo noti nếu danh sách không rỗng
         if (!allUsernames.isEmpty()) {
