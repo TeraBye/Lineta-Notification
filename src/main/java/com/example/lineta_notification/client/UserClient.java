@@ -20,7 +20,7 @@ public class UserClient {
 
     private final RestTemplate restTemplate;
 
-    @Value("http://localhost:8080")
+    @Value("http://auth-service:8080")
     private String userServiceUrl;
 
     public Map<String, UserDTO> getUsersByUsernames(Set<String> usernames) {
@@ -47,7 +47,7 @@ public class UserClient {
         return new HashMap<>();
     }
 
-    @Value("http://localhost:8081")
+    @Value("http://friend-service:8081")
     private String userServiceUrl8081;
 
     public List<String> getFollowerUsernames(String followedId) {
@@ -66,6 +66,33 @@ public class UserClient {
 
         return Collections.emptyList();
     }
+
+    @Value("http://auth-service:8080")
+    private String notificationServiceUrl;
+
+    public String getFcmTokenByUsername(String username, String content) {
+        String encodedUsername = UriUtils.encodePathSegment(username, StandardCharsets.UTF_8);
+        String url = notificationServiceUrl + "/api/auth/token/" + encodedUsername;
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN); // vì server nhận @RequestBody String
+
+            HttpEntity<String> request = new HttpEntity<>(content, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            }
+        } catch (Exception ex) {
+            System.out.println("Lỗi khi gọi notification-service để lấy FCM token: " + ex.getMessage());
+        }
+
+        return null;
+    }
+
+
 
 
 

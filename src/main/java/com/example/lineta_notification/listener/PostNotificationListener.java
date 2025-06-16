@@ -2,10 +2,12 @@ package com.example.lineta_notification.listener;
 
 import com.example.lineta_notification.client.UserClient;
 import com.example.lineta_notification.entity.PostNotification;
+import com.example.lineta_notification.service.FcmService;
 import com.example.lineta_notification.service.PostNoteService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.Timestamp;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,12 +29,15 @@ public class PostNotificationListener {
     private SimpMessagingTemplate messagingTemplate;
     private final UserClient userClient;
 
-    public PostNotificationListener(UserClient userClient) {
+    private final FcmService fcmService;
+
+    public PostNotificationListener(UserClient userClient, FcmService fcmService) {
         this.userClient = userClient;
+        this.fcmService = fcmService;
     }
 
     @KafkaListener(topics = "post-notifications", groupId = "notification-group")
-    public void handlePostNotification(String message) throws JsonProcessingException, ExecutionException, InterruptedException {
+    public void handlePostNotification(String message) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> data = mapper.readValue(message, new TypeReference<>() {});
 
@@ -57,6 +62,7 @@ public class PostNotificationListener {
 
         for (String username : allUsernames) {
             messagingTemplate.convertAndSend("/topic/notifications/" + username, senderUsername);
+            userClient.getFcmTokenByUsername(username,content);
         }
 
 

@@ -17,7 +17,7 @@ import java.io.IOException;
 public class FirebaseConfig {
     @Bean
     public Firestore firestore() throws IOException {
-        FileInputStream fileInputStream = new FileInputStream("src/main/resources/notificationKey.json");
+        FileInputStream fileInputStream = new FileInputStream("/app/notificationKey.json");
 
         FirebaseOptions firebaseOptions = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(fileInputStream))
